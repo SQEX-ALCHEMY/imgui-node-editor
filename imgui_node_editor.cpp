@@ -1195,13 +1195,16 @@ void ed::EditorContext::Begin(const char* id, const ImVec2& size)
     m_LastSelectedObjects = m_SelectedObjects;
 }
 
-void ed::EditorContext::GetGroupContainedIds(NodeId id, std::vector<NodeId>& ids)
+void ed::EditorContext::GetGroupContainedIds(NodeId id, std::vector<NodeId>* ids)
 {
-    ids.clear();
-    auto* group = GetNode(id);
-    for (auto node : m_Nodes) {
-        if (node->m_ID != group->m_ID && !ImRect_IsEmpty(node->m_Bounds) && group->m_Bounds.Contains(node->m_Bounds)) {
-            ids.emplace_back(node->m_ID);
+    ids->clear();
+    const auto* group = GetNode(id);
+    for (const auto& node : m_Nodes) {
+        if (node->m_IsLive &&
+            node->m_ID != group->m_ID &&
+            !ImRect_IsEmpty(node->m_Bounds) && 
+            group->m_Bounds.Contains(node->m_Bounds)) {
+            ids->emplace_back(node->m_ID);
         }
     }
 }

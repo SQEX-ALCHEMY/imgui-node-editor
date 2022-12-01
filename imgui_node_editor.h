@@ -253,7 +253,7 @@ void EndNode();
 bool BeginGroupHint(NodeId nodeId);
 ImVec2 GetGroupMin();
 ImVec2 GetGroupMax();
-void GetGroupContainedIds(NodeId id, std::vector<ax::NodeEditor::NodeId>& ids);
+void GetGroupContainedIds(NodeId id, std::vector<NodeId>* ids);
 ImDrawList* GetHintForegroundDrawList();
 ImDrawList* GetHintBackgroundDrawList();
 void EndGroupHint();

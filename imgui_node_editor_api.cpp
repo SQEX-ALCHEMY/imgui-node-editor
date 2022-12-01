@@ -176,7 +176,7 @@ ImVec2 ax::NodeEditor::GetGroupMax()
     return s_Editor->GetHintBuilder().GetGroupMax();
 }
 
-void ax::NodeEditor::GetGroupContainedIds(NodeId id, std::vector<NodeId>& ids)
+void ax::NodeEditor::GetGroupContainedIds(NodeId id, std::vector<NodeId>* ids)
 {
     s_Editor->GetGroupContainedIds(id, ids);
 }
