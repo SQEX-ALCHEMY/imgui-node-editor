@@ -1465,6 +1465,14 @@ private:
     ImDrawListSplitter  m_Splitter;
 };
 
+constexpr const ImRect kDefaultNodeRect(0, 0, 100, 50);
+constexpr const ImVec2 kPinMarginTotal(0, 40);
+constexpr const ImVec2 kPinMarginStart(0, 10);
+constexpr const ImVec2 kPinMarginEnd(0, 30);
+constexpr const float kLinkMarginSmall = 0.33F;
+constexpr const float kLinkMarginLarge = 0.66F;
+constexpr const float kLinkMarginMax = 0.80F;
+constexpr const float kLinkHalfWidth = 5.0F;
 
 //------------------------------------------------------------------------------
 } // namespace Detail

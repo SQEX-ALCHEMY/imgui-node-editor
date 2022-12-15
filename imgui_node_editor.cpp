@@ -861,7 +861,7 @@ void ed::Link::Draw(ImDrawList* drawList, ImU32 color, float extraThickness) con
     drawList->PathStroke(color, 0, m_Thickness + extraThickness);
     const auto end_dir = ImVec2(0, 1);
     const auto end_n = ImVec2(-end_dir.y, end_dir.x);
-    const auto half_width = 10 * 0.5f;
+    const auto half_width = kLinkHalfWidth;   
     const auto tip = path.P5 + end_dir * 10;
 
     auto draw_arrow = [drawList](ImLinePoints path, float thickness,
@@ -932,12 +932,12 @@ ImLinePoints ed::Link::GetPath() const
     const auto cp0 = m_Start + m_StartPin->m_Dir * startStrength;
     auto cp1 = m_End + m_EndPin->m_Dir * endStrength;
     if (isBackWard()) {
-        const ImRect node_bounds = m_StartPin && m_StartPin->m_Node? m_StartPin->m_Node->m_Bounds : ImRect(0, 0, 100, 50);
-        cp1 -= ImVec2(0, 40);
-        result.P0 = cp0 + ImVec2(0, node_bounds.GetHeight() * 0.33F);
-        result.P1 = result.P0 + ImVec2(0, 30);
-        result.P2 = ImVec2(result.P1.x + node_bounds.GetWidth() * 0.66F, result.P1.y);
-        result.P3 = ImVec2(result.P2.x, cp1.y - node_bounds.GetHeight() * 0.33F);
+        const ImRect node_bounds = m_StartPin && m_StartPin->m_Node? m_StartPin->m_Node->m_Bounds : kDefaultNodeRect;
+        cp1 -= kPinMarginTotal;
+        result.P0 = cp0 + ImVec2(0, node_bounds.GetHeight() * kLinkMarginSmall);
+        result.P1 = result.P0 + kPinMarginStart;
+        result.P2 = ImVec2(result.P1.x + node_bounds.GetWidth() * kLinkMarginLarge, result.P1.y);
+        result.P3 = ImVec2(result.P2.x, cp1.y - node_bounds.GetHeight() * kLinkMarginSmall);
         result.P4 = ImVec2(cp1.x, result.P3.y);
         result.P5 = cp1;
     }
@@ -958,13 +958,13 @@ ImLinePoints ed::Link::GetPathSameNode() const
 {
     ImLinePoints result;
 
-    const ImRect node_bounds = m_StartPin && m_StartPin->m_Node ? m_StartPin->m_Node->m_Bounds : ImRect(0, 0, 100, 50);
-    result.P0 = m_Start + ImVec2(0, 10);
-    result.P1 = m_Start + ImVec2(0, 30);
-    result.P2 = result.P1 + ImVec2(node_bounds.GetWidth() * 0.66F, 0);
-    result.P3 = ImVec2(result.P2.x, m_End.y - node_bounds.GetHeight() * 0.80F);
-    result.P4 = result.P3 - ImVec2(node_bounds.GetWidth() * 0.66F, 0);
-    result.P5 = m_End - ImVec2(0, 40);
+    const ImRect node_bounds = m_StartPin && m_StartPin->m_Node ? m_StartPin->m_Node->m_Bounds : kDefaultNodeRect;
+    result.P0 = m_Start + kPinMarginStart;
+    result.P1 = result.P0 + kPinMarginEnd;
+    result.P2 = result.P1 + ImVec2(node_bounds.GetWidth() * kLinkMarginLarge, 0);
+    result.P3 = ImVec2(result.P2.x, m_End.y - node_bounds.GetHeight() * kLinkMarginMax);
+    result.P4 = result.P3 - ImVec2(node_bounds.GetWidth() * kLinkMarginLarge, 0);
+    result.P5 = m_End - kPinMarginTotal;
 
     return result;
 }
