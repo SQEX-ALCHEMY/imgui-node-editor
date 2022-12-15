@@ -851,24 +851,56 @@ void ed::Link::Draw(ImDrawList* drawList, ImU32 color, float extraThickness) con
 
 
     //if (m_SameNode) {
-        const auto path = GetPath();
-        const auto half_thickness = (m_Thickness + extraThickness) * 0.5f;
-        drawList->PathLineTo(path.P0);
-        drawList->PathLineTo(path.P1);
-        drawList->PathLineTo(path.P2);
-        drawList->PathLineTo(path.P3);
-        drawList->PathLineTo(path.P4);
-        drawList->PathLineTo(path.P5);
-        drawList->PathStroke(color, 0, m_Thickness + extraThickness);
-        const auto end_dir = ImVec2(0, 1);
-        const auto end_n = ImVec2(-end_dir.y, end_dir.x);
-        const auto half_width = 10 * 0.5f;
-        const auto tip = path.P5 + end_dir * 10;
+    const auto path = GetPath();
+    const auto half_thickness = (m_Thickness + extraThickness) * 0.5f;
+    drawList->PathLineTo(path.P0);
+    drawList->PathLineTo(path.P1);
+    drawList->PathLineTo(path.P2);
+    drawList->PathLineTo(path.P3);
+    drawList->PathLineTo(path.P4);
+    drawList->PathLineTo(path.P5);
+    drawList->PathStroke(color, 0, m_Thickness + extraThickness);
+    const auto end_dir = ImVec2(0, 1);
+    const auto end_n = ImVec2(-end_dir.y, end_dir.x);
+    const auto half_width = 10 * 0.5f;
+    const auto tip = path.P5 + end_dir * 10;
 
-        drawList->PathLineTo(path.P5 + end_n * half_width);
-        drawList->PathLineTo(path.P5 - end_n * half_width);
-        drawList->PathLineTo(tip);
-        drawList->PathFillConvex(color);
+    /*drawList->PathLineTo(path.P5 + end_n * half_width);
+    drawList->PathLineTo(path.P5 - end_n * half_width);
+    drawList->PathLineTo(tip);
+    drawList->PathFillConvex(color);*/
+    auto draw_arrow = [drawList](ImLinePoints path, float thickness,
+                          float startArrowSize, float startArrowWidth, float endArrowSize, float endArrowWidth, ImU32 color) {
+        const auto half_thickness = thickness * 0.5f;
+        if (startArrowSize > 0.0f) {
+            const auto start_dir = ImNormalized(ImCubicBezierTangent(path.P0, path.P1, path.P4, path.P5, 0.0f));
+            const auto start_n = ImVec2(-start_dir.y, start_dir.x);
+            const auto half_width = startArrowWidth * 0.5f;
+            const auto tip = path.P0 - start_dir * startArrowSize;
+
+            drawList->PathLineTo(path.P0 - start_n * ImMax(half_width, half_thickness));
+            drawList->PathLineTo(path.P0 + start_n * ImMax(half_width, half_thickness));
+            drawList->PathLineTo(tip);
+            drawList->PathFillConvex(color);
+        }
+
+        if (endArrowSize > 0.0f) {
+            const auto end_dir = ImNormalized(ImCubicBezierTangent(path.P0, path.P1, path.P4, path.P5, 1.0f));
+            const auto end_n = ImVec2(-end_dir.y, end_dir.x);
+            const auto half_width = endArrowWidth * 0.5f;
+            const auto tip = path.P5 + end_dir * endArrowSize;
+
+            drawList->PathLineTo(path.P5 + end_n * ImMax(half_width, half_thickness));
+            drawList->PathLineTo(path.P5 - end_n * ImMax(half_width, half_thickness));
+            drawList->PathLineTo(tip);
+            drawList->PathFillConvex(color);
+        }
+    };
+    draw_arrow(path, m_Thickness + extraThickness,
+        m_StartPin && m_StartPin->m_ArrowSize > 0.0f ? m_StartPin->m_ArrowSize + extraThickness : 0.0f,
+        m_StartPin && m_StartPin->m_ArrowWidth > 0.0f ? m_StartPin->m_ArrowWidth + extraThickness : 0.0f,
+        m_EndPin && m_EndPin->m_ArrowSize > 0.0f ? m_EndPin->m_ArrowSize + extraThickness : 0.0f,
+        m_EndPin && m_EndPin->m_ArrowWidth > 0.0f ? m_EndPin->m_ArrowWidth + extraThickness : 0.0f, color);
     /*} else {
         const auto path = GetPath();
         ImDrawList_AddBezierWithArrows(drawList, ImCubicBezierPoints{path.P0, path.P1, path.P2, path.P3}, m_Thickness + extraThickness,
@@ -907,15 +939,16 @@ ImLinePoints ed::Link::GetPath() const
     const auto startStrength = easeLinkStrength(m_Start, m_End, m_StartPin->m_Strength);
     const auto endStrength = easeLinkStrength(m_Start, m_End, m_EndPin->m_Strength);
     const auto cp0 = m_Start + m_StartPin->m_Dir * startStrength;
-    const auto cp1 = m_End + m_EndPin->m_Dir * endStrength;
+    auto cp1 = m_End + m_EndPin->m_Dir * endStrength;
     if (m_Start.y > m_End.y && fabsf(m_End.x - m_Start.x) < 0.1F * fabsf(m_End.y - m_Start.y)) {
         auto& node_bounds = m_StartPin->m_Node->m_Bounds;
-        result.P0 = cp0 + ImVec2(0, 10);
+        cp1 -= ImVec2(0, 40);
+        result.P0 = cp0 + ImVec2(0, node_bounds.GetHeight() * 0.33F);
         result.P1 = result.P0 + ImVec2(0, 30);
         result.P2 = ImVec2(result.P1.x - node_bounds.GetWidth() * 0.66F, result.P1.y);
-        result.P3 = ImVec2(result.P2.x, cp1.y - 40);
+        result.P3 = ImVec2(result.P2.x, cp1.y - node_bounds.GetHeight() * 0.33F);
         result.P4 = ImVec2(cp1.x, result.P3.y);
-        result.P5 = cp1 - ImVec2(0, 10);
+        result.P5 = cp1;
     }
     else {
         result.P0 = m_Start;
@@ -947,19 +980,14 @@ ImLinePoints ed::Link::GetPathSameNode() const
 bool ed::Link::TestHitSameNode(const ImLinePoints& path, const ImVec2& point, float extraThickness) const
 {
     auto inlineDistance = [](const ImVec2& l1, const ImVec2& l2, const ImVec2& p1) {
-        ImVec2 edge = l1 - l2;
-        ImVec2 a2from = p1 - l1;
-        float dot = ImDot(edge, a2from);
-        if (dot <= 0.0f) {
-            return ImPow(a2from.x, 2) + ImPow(a2from.y, 2);
-        }
-        float edgeLengthSqr = ImPow(edge.x, 2) + ImPow(edge.y, 2);
-        if (dot >= edgeLengthSqr) {
-            ImVec2 sq3 = l2 - p1;
-            return ImPow(sq3.x, 2) + ImPow(sq3.y, 2);
-        }
-        ImVec2 sq = (p1 + edge * dot / edgeLengthSqr - p1);
-        return ImPow(sq.x, 2) + ImPow(sq.y, 2);
+        const float dxc = p1.x - l1.x;
+        const float dyc = p1.y - l1.y;
+
+        const float dxl = l2.x - l1.x;
+        const float dyl = l2.y - l1.y;
+
+        const float cross = dxc * dyl - dyc * dxl;
+        return cross;
     };
     float min_dist_sqr = (extraThickness + m_Thickness);
     min_dist_sqr *= min_dist_sqr;
@@ -989,12 +1017,11 @@ bool ed::Link::TestHit(const ImVec2& point, float extraThickness) const
     auto bounds = GetBounds();
     if (extraThickness > 0.0f)
         bounds.Expand(extraThickness);
-
     if (!bounds.Contains(point))
         return false;
 
-        const auto path = GetPath();
-        return TestHitSameNode(path, point, extraThickness);
+    const auto path = GetPath();
+    return TestHitSameNode(path, point, extraThickness);
 }
 
 bool ed::Link::TestHit(const ImRect& rect, bool allowIntersect) const
@@ -2780,17 +2807,17 @@ void ed::FlowAnimation::Draw(ImDrawList* drawList)
         const auto markerColor = m_Link->m_FlowColor;
 
         //if (m_Link->m_SameNode) {
-                drawList->AddCircleFilled(m_Path[0].Point + ImVec2(0, m_Offset), markerRadius, markerColor);
-            drawList->AddCircleFilled(m_Path[1].Point + ImVec2(m_Offset, 0), markerRadius, markerColor);
-                drawList->AddCircleFilled(m_Path[2].Point + ImVec2(m_Offset, 0), markerRadius, markerColor);
-                drawList->AddCircleFilled(m_Path[3].Point + ImVec2(m_Offset, 0), markerRadius, markerColor);
-                drawList->AddCircleFilled(m_Path[4].Point + ImVec2(0, -m_Offset), markerRadius, markerColor);
-                drawList->AddCircleFilled(m_Path[5].Point + ImVec2(0, -m_Offset), markerRadius, markerColor);
-                drawList->AddCircleFilled(m_Path[6].Point + ImVec2(0, -m_Offset), markerRadius, markerColor);
-                drawList->AddCircleFilled(m_Path[7].Point + ImVec2(-m_Offset, 0), markerRadius, markerColor);
-                drawList->AddCircleFilled(m_Path[8].Point + ImVec2(-m_Offset, 0), markerRadius, markerColor);
-                drawList->AddCircleFilled(m_Path[9].Point + ImVec2(-m_Offset, 0), markerRadius, markerColor);
-                drawList->AddCircleFilled(m_Path[10].Point + ImVec2(0, m_Offset), markerRadius, markerColor);
+        drawList->AddCircleFilled(m_Path[0].Point + ImVec2(0, m_Offset), markerRadius, markerColor);
+        drawList->AddCircleFilled(m_Path[1].Point + ImVec2(m_Offset, 0), markerRadius, markerColor);
+        drawList->AddCircleFilled(m_Path[2].Point + ImVec2(m_Offset, 0), markerRadius, markerColor);
+        drawList->AddCircleFilled(m_Path[3].Point + ImVec2(m_Offset, 0), markerRadius, markerColor);
+        drawList->AddCircleFilled(m_Path[4].Point + ImVec2(0, -m_Offset), markerRadius, markerColor);
+        drawList->AddCircleFilled(m_Path[5].Point + ImVec2(0, -m_Offset), markerRadius, markerColor);
+        drawList->AddCircleFilled(m_Path[6].Point + ImVec2(0, -m_Offset), markerRadius, markerColor);
+        drawList->AddCircleFilled(m_Path[7].Point + ImVec2(-m_Offset, 0), markerRadius, markerColor);
+        drawList->AddCircleFilled(m_Path[8].Point + ImVec2(-m_Offset, 0), markerRadius, markerColor);
+        drawList->AddCircleFilled(m_Path[9].Point + ImVec2(-m_Offset, 0), markerRadius, markerColor);
+        drawList->AddCircleFilled(m_Path[10].Point + ImVec2(0, m_Offset), markerRadius, markerColor);
         /*} else {
             for (float d = m_Offset; d < m_PathLength; d += m_MarkerDistance) {
                 drawList->AddCircleFilled(SamplePath(d), markerRadius, markerColor);
