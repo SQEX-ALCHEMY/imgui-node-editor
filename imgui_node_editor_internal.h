@@ -465,6 +465,7 @@ struct Link final: Object
     void Draw(ImDrawList* drawList, ImU32 color, float extraThickness = 0.0f) const;
 
     void UpdateEndpoints();
+    bool isBackWard() const;
 
     ImLinePoints GetPath() const;
     ImLinePoints GetPathSameNode() const;

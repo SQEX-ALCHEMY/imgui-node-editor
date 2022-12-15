@@ -904,7 +904,12 @@ void ed::Link::UpdateEndpoints()
     m_Start = line.A;
     m_End   = line.B;
 }
-#include <iostream>
+
+bool ed::Link::isBackWard() const
+{
+    return m_Start.y > m_End.y && fabsf(m_End.x - m_Start.x) < 0.1F * fabsf(m_End.y - m_Start.y);
+}
+
 ImLinePoints ed::Link::GetPath() const
 {
     if (m_SameNode) {
@@ -926,22 +931,23 @@ ImLinePoints ed::Link::GetPath() const
     const auto endStrength = easeLinkStrength(m_Start, m_End, m_EndPin->m_Strength);
     const auto cp0 = m_Start + m_StartPin->m_Dir * startStrength;
     auto cp1 = m_End + m_EndPin->m_Dir * endStrength;
-    if (m_Start.y > m_End.y && fabsf(m_End.x - m_Start.x) < 0.1F * fabsf(m_End.y - m_Start.y)) {
-        auto& node_bounds = m_StartPin->m_Node->m_Bounds;
+    if (isBackWard()) {
+        const ImRect node_bounds = m_StartPin && m_StartPin->m_Node? m_StartPin->m_Node->m_Bounds : ImRect(0, 0, 100, 50);
         cp1 -= ImVec2(0, 40);
         result.P0 = cp0 + ImVec2(0, node_bounds.GetHeight() * 0.33F);
         result.P1 = result.P0 + ImVec2(0, 30);
-        result.P2 = ImVec2(result.P1.x - node_bounds.GetWidth() * 0.66F, result.P1.y);
+        result.P2 = ImVec2(result.P1.x + node_bounds.GetWidth() * 0.66F, result.P1.y);
         result.P3 = ImVec2(result.P2.x, cp1.y - node_bounds.GetHeight() * 0.33F);
         result.P4 = ImVec2(cp1.x, result.P3.y);
         result.P5 = cp1;
     }
     else {
+        const ImVec2 offset = (m_End - m_Start) / 4;
         result.P0 = m_Start;
-        result.P1 = cp0;
-        result.P2 = cp0;
-        result.P3 = cp1;
-        result.P4 = cp1;
+        result.P1 = m_Start + offset;
+        result.P2 = result.P1 + offset;
+        result.P3 = result.P2 + offset;
+        result.P4 = result.P3 + offset;
         result.P5 = m_End;
     }
 
@@ -952,7 +958,7 @@ ImLinePoints ed::Link::GetPathSameNode() const
 {
     ImLinePoints result;
 
-    const ImRect node_bounds = m_StartPin ? m_StartPin->m_Node->m_Bounds : ImRect(0, 0, 100, 50);
+    const ImRect node_bounds = m_StartPin && m_StartPin->m_Node ? m_StartPin->m_Node->m_Bounds : ImRect(0, 0, 100, 50);
     result.P0 = m_Start + ImVec2(0, 10);
     result.P1 = m_Start + ImVec2(0, 30);
     result.P2 = result.P1 + ImVec2(node_bounds.GetWidth() * 0.66F, 0);
@@ -2776,7 +2782,7 @@ void ed::FlowAnimation::Draw(ImDrawList* drawList)
 
     m_Offset = fmodf(m_Offset, m_MarkerDistance);
 
-    const auto progress    = GetProgress();
+    const auto progress = GetProgress();
 
     const auto flowAlpha = 1.0f - progress * progress;
     const auto flowColor = m_Link->m_FlowColor;
@@ -2784,25 +2790,28 @@ void ed::FlowAnimation::Draw(ImDrawList* drawList)
 
     m_Link->Draw(drawList, flowColor, 2.0f);
 
-    if (IsPathValid())
-    {
-        //Offset = 0;
-
-        const auto markerAlpha  = powf(1.0f - progress, 0.35f);
+    if (IsPathValid()) {
+        const auto markerAlpha = powf(1.0f - progress, 0.35f);
         const auto markerRadius = 4.0f * (1.0f - progress) + 2.0f;
         const auto markerColor = m_Link->m_FlowColor;
 
-        drawList->AddCircleFilled(m_Path[0].Point + ImVec2(0, m_Offset), markerRadius, markerColor);
-        drawList->AddCircleFilled(m_Path[1].Point + ImVec2(m_Offset, 0), markerRadius, markerColor);
-        drawList->AddCircleFilled(m_Path[2].Point + ImVec2(m_Offset, 0), markerRadius, markerColor);
-        drawList->AddCircleFilled(m_Path[3].Point + ImVec2(m_Offset, 0), markerRadius, markerColor);
-        drawList->AddCircleFilled(m_Path[4].Point + ImVec2(0, -m_Offset), markerRadius, markerColor);
-        drawList->AddCircleFilled(m_Path[5].Point + ImVec2(0, -m_Offset), markerRadius, markerColor);
-        drawList->AddCircleFilled(m_Path[6].Point + ImVec2(0, -m_Offset), markerRadius, markerColor);
-        drawList->AddCircleFilled(m_Path[7].Point + ImVec2(-m_Offset, 0), markerRadius, markerColor);
-        drawList->AddCircleFilled(m_Path[8].Point + ImVec2(-m_Offset, 0), markerRadius, markerColor);
-        drawList->AddCircleFilled(m_Path[9].Point + ImVec2(-m_Offset, 0), markerRadius, markerColor);
-        drawList->AddCircleFilled(m_Path[10].Point + ImVec2(0, m_Offset), markerRadius, markerColor);
+        if (m_Link->m_SameNode || m_Link->isBackWard()) {
+            drawList->AddCircleFilled(m_Path[0].Point + ImVec2(0, m_Offset), markerRadius, markerColor);
+            drawList->AddCircleFilled(m_Path[1].Point + ImVec2(m_Offset, 0), markerRadius, markerColor);
+            drawList->AddCircleFilled(m_Path[2].Point + ImVec2(m_Offset, 0), markerRadius, markerColor);
+            drawList->AddCircleFilled(m_Path[3].Point + ImVec2(m_Offset, 0), markerRadius, markerColor);
+            drawList->AddCircleFilled(m_Path[4].Point + ImVec2(0, -m_Offset), markerRadius, markerColor);
+            drawList->AddCircleFilled(m_Path[5].Point + ImVec2(0, -m_Offset), markerRadius, markerColor);
+            drawList->AddCircleFilled(m_Path[6].Point + ImVec2(0, -m_Offset), markerRadius, markerColor);
+            drawList->AddCircleFilled(m_Path[7].Point + ImVec2(-m_Offset, 0), markerRadius, markerColor);
+            drawList->AddCircleFilled(m_Path[8].Point + ImVec2(-m_Offset, 0), markerRadius, markerColor);
+            drawList->AddCircleFilled(m_Path[9].Point + ImVec2(-m_Offset, 0), markerRadius, markerColor);
+            drawList->AddCircleFilled(m_Path[10].Point + ImVec2(0, m_Offset), markerRadius, markerColor);
+        } else {
+            for (float d = m_Offset; d < m_PathLength; d += m_MarkerDistance) {
+                drawList->AddCircleFilled(SamplePath(d), markerRadius, markerColor);
+            }
+        }
     }
 }
 
@@ -2825,27 +2834,39 @@ void ed::FlowAnimation::UpdatePath()
 
     const auto curve = m_Link->GetPath();
 
-    auto distance = [](const ImVec2& a, const ImVec2& b) {
-        const float distanceX = b.x - a.x;
-        const float distanceY = b.y - a.y;
-        return ImSqrt(distanceX * distanceX + distanceY * distanceY);
-    };
-    m_Path.clear();
-    m_LastStart = m_Link->m_Start;
-    m_LastEnd = m_Link->m_End;
-    m_PathLength = 1;
-    m_Path.push_back(CurvePoint{0, curve.P0});
-    m_Path.push_back(CurvePoint{0, curve.P1});
-    m_Path.push_back(CurvePoint{0, curve.P1 + ImVec2(distance(curve.P1, curve.P2) / 3, 0)});
-    m_Path.push_back(CurvePoint{0, curve.P1 + ImVec2(distance(curve.P1, curve.P2) * 2 / 3, 0)});
-    m_Path.push_back(CurvePoint{0, curve.P2});
-    m_Path.push_back(CurvePoint{0, curve.P2 + ImVec2(0, -distance(curve.P2, curve.P3) / 3)});
-    m_Path.push_back(CurvePoint{0, curve.P2 + ImVec2(0, -distance(curve.P2, curve.P3) * 2 / 3)});
-    m_Path.push_back(CurvePoint{0, curve.P3});
-    m_Path.push_back(CurvePoint{0, curve.P3 + ImVec2(-distance(curve.P3, curve.P4) / 3, 0)});
-    m_Path.push_back(CurvePoint{0, curve.P3 + ImVec2(-distance(curve.P3, curve.P4) * 2 / 3, 0)});
-    m_Path.push_back(CurvePoint{0, curve.P4});
-    m_Path.push_back(CurvePoint{0, curve.P5});
+    if (m_Link->m_SameNode || m_Link->isBackWard()) {
+        auto distance = [](const ImVec2& a, const ImVec2& b) {
+            const float distanceX = b.x - a.x;
+            const float distanceY = b.y - a.y;
+            return ImSqrt(distanceX * distanceX + distanceY * distanceY);
+        };
+        m_Path.clear();
+        m_LastStart = m_Link->m_Start;
+        m_LastEnd = m_Link->m_End;
+        m_PathLength = 1;
+        m_Path.push_back(CurvePoint{0, curve.P0});
+        m_Path.push_back(CurvePoint{0, curve.P1});
+        m_Path.push_back(CurvePoint{0, curve.P1 + ImVec2(distance(curve.P1, curve.P2) / 3, 0)});
+        m_Path.push_back(CurvePoint{0, curve.P1 + ImVec2(distance(curve.P1, curve.P2) * 2 / 3, 0)});
+        m_Path.push_back(CurvePoint{0, curve.P2});
+        m_Path.push_back(CurvePoint{0, curve.P2 + ImVec2(0, -distance(curve.P2, curve.P3) / 3)});
+        m_Path.push_back(CurvePoint{0, curve.P2 + ImVec2(0, -distance(curve.P2, curve.P3) * 2 / 3)});
+        m_Path.push_back(CurvePoint{0, curve.P3});
+        m_Path.push_back(CurvePoint{0, curve.P3 + ImVec2(-distance(curve.P3, curve.P4) / 3, 0)});
+        m_Path.push_back(CurvePoint{0, curve.P3 + ImVec2(-distance(curve.P3, curve.P4) * 2 / 3, 0)});
+        m_Path.push_back(CurvePoint{0, curve.P4});
+        m_Path.push_back(CurvePoint{0, curve.P5});
+    } else {
+        m_LastStart = m_Link->m_Start;
+        m_LastEnd = m_Link->m_End;
+        m_PathLength = ImCubicBezierLength(curve.P0, curve.P2, curve.P4, curve.P5);
+        auto collectPointsCallback = [this](ImCubicBezierFixedStepSample& result) {
+            m_Path.push_back(CurvePoint{result.Length, result.Point});
+        };
+        const auto step = ImMax(m_MarkerDistance * 0.5f, 15.0f);
+        m_Path.resize(0);
+        ImCubicBezierFixedStep(collectPointsCallback, ImCubicBezierPoints{curve.P0, curve.P2, curve.P4, curve.P5}, step, false, 0.5f, 0.001f);
+    }
 }
 
 void ed::FlowAnimation::ClearPath()
