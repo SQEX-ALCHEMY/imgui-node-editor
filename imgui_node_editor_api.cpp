@@ -222,7 +222,11 @@ bool ax::NodeEditor::LinkDuplicates(const std::vector<std::pair<uint64_t, ImVec4
     const bool aligned = fabsf(endx - startx) < 0.05F * fabsf(endy - starty);
 
     if (ids.size() > kmaxRenderLinks || sameNode || !aligned) {
-        return s_Editor->DoLink(ids.front().first, startPinId, endPinId, IM_COL32(color.x, color.y, color.z, color.w), thickness * static_cast<float>(ids.size()), sameNode);
+        float render_tickness = thickness * static_cast<float>(ids.size());
+        if (render_tickness > 20.0F) {
+            render_tickness = 20.0F;
+        }
+        return s_Editor->DoLink(ids.front().first, startPinId, endPinId, IM_COL32(color.x, color.y, color.z, color.w), render_tickness, sameNode);
     }
 
     for (auto id : ids) {
