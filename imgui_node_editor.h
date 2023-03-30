@@ -260,7 +260,7 @@ bool LinkDuplicates(const std::vector<std::pair<uint64_t, ImVec4>>& ids, PinId s
 
 void Flow(LinkId linkId, const ImVec4& color = ImVec4(255, 128, 64, 255));
 
-bool BeginCreate(const ImVec4& color = ImVec4(255, 255, 255, 255), float thickness = 1.0f);
+bool BeginCreate(const ImVec4& color = ImVec4(255, 255, 255, 255), float thickness = 1.0f, bool bezier = false);
 bool QueryNewLink(PinId* startId, PinId* endId);
 bool QueryNewLink(PinId* startId, PinId* endId, const ImVec4& color, float thickness = 1.0f);
 bool QueryNewNode(PinId* pinId);

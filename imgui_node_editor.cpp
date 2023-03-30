@@ -2780,6 +2780,19 @@ void ed::FlowAnimation::UpdatePath()
         ClearPath();
         return;
     }
+    auto collectPointsCallback = [this](ImCubicBezierFixedStepSample& result) {
+        m_Path.push_back(CurvePoint{result.Length, result.Point});
+    };
+    m_LastStart = m_Link->m_Start;
+    m_LastEnd = m_Link->m_End;
+    m_Path.clear();
+    const auto step = ImMax(m_MarkerDistance * 0.5f, 15.0f);
+    if (m_Link->m_Bezier) {
+        auto curve = m_Link->GetCurve();
+        m_PathLength = ImCubicBezierLength(curve.P0, curve.P1, curve.P2, curve.P3);
+        ImCubicBezierFixedStep(collectPointsCallback, curve, step, false, 0.5f, 0.001f);
+        return;
+    }
 
     const auto curve = m_Link->GetPath();
 
@@ -2789,9 +2802,6 @@ void ed::FlowAnimation::UpdatePath()
             const float distanceY = b.y - a.y;
             return ImSqrt(distanceX * distanceX + distanceY * distanceY);
         };
-        m_Path.clear();
-        m_LastStart = m_Link->m_Start;
-        m_LastEnd = m_Link->m_End;
         m_PathLength = 1;
         m_Path.push_back(CurvePoint{0, curve.P0});
         m_Path.push_back(CurvePoint{0, curve.P1});
@@ -2806,14 +2816,7 @@ void ed::FlowAnimation::UpdatePath()
         m_Path.push_back(CurvePoint{0, curve.P4});
         m_Path.push_back(CurvePoint{0, curve.P5});
     } else {
-        m_LastStart = m_Link->m_Start;
-        m_LastEnd = m_Link->m_End;
         m_PathLength = ImCubicBezierLength(curve.P0, curve.P2, curve.P4, curve.P5);
-        auto collectPointsCallback = [this](ImCubicBezierFixedStepSample& result) {
-            m_Path.push_back(CurvePoint{result.Length, result.Point});
-        };
-        const auto step = ImMax(m_MarkerDistance * 0.5f, 15.0f);
-        m_Path.resize(0);
         ImCubicBezierFixedStep(collectPointsCallback, ImCubicBezierPoints{curve.P0, curve.P2, curve.P4, curve.P5}, step, false, 0.5f, 0.001f);
     }
 }
@@ -4131,6 +4134,7 @@ bool ed::CreateItemAction::Process(const Control& control)
         candidate.m_Color = m_LinkColor;
         candidate.m_StartPin = draggingFromSource ? m_DraggedPin : &cursorPin;
         candidate.m_EndPin = draggingFromSource ? &cursorPin : m_DraggedPin;
+        candidate.m_Bezier = m_Bezier;
 
         ed::Pin*& freePin = draggingFromSource ? candidate.m_EndPin : candidate.m_StartPin;
 

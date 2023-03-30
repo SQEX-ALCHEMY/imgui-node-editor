@@ -265,12 +265,13 @@ void ax::NodeEditor::Flow(LinkId linkId, const ImVec4& color)
     }
 }
 
-bool ax::NodeEditor::BeginCreate(const ImVec4& color, float thickness)
+bool ax::NodeEditor::BeginCreate(const ImVec4& color, float thickness, bool bezier)
 {
     auto& context = s_Editor->GetItemCreator();
 
     if (context.Begin()) {
         context.SetStyle(IM_COL32(color.x, color.y, color.z, color.w), thickness);
+        context.m_Bezier = bezier;
         //context.SetStyle(ImColor(color), thickness);
         return true;
     } else
