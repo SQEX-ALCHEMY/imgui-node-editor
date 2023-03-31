@@ -1060,6 +1060,7 @@ struct CreateItemAction final : EditorAction {
     float m_LinkThickness;
     Pin* m_LinkStart;
     Pin* m_LinkEnd;
+    bool m_Bezier;
 
     bool m_IsActive;
     Pin* m_DraggedPin;
