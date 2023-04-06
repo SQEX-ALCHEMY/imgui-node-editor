@@ -1629,6 +1629,32 @@ ImVec2 ed::EditorContext::GetNodeSize(NodeId nodeId)
     return node->m_Bounds.GetSize();
 }
 
+ImVec2 ed::EditorContext::GetNodeDesiredSize(NodeId nodeId)
+{
+    auto node = FindNode(nodeId);
+    if (!node)
+        return ImVec2(0, 0);
+
+    return node->m_DesiredSize;
+}
+
+void ed::EditorContext::SetNodeSize(NodeId nodeId, const ImVec2& size)
+{
+    auto node = FindNode(nodeId);
+    if (!node) {
+        node = CreateNode(nodeId);
+        node->m_IsLive = false;
+    }
+    if (node->m_DesiredSize != size) {
+        node->m_Bounds.Max = node->m_Bounds.Min + size;
+        node->m_GroupBounds.Min = node->m_Bounds.Min;
+        node->m_GroupBounds.Max = node->m_Bounds.Min + size;
+        node->m_Bounds.Floor();
+        node->m_DesiredSize = size;
+        MakeDirty(NodeEditor::SaveReasonFlags::Size, node);
+    }
+}
+
 void ed::EditorContext::MarkNodeToRestoreState(Node* node)
 {
     node->m_RestoreState = true;
@@ -4733,6 +4759,11 @@ void ed::NodeBuilder::End()
     m_NodeRect = ImGui_GetItemRect();
     m_NodeRect.Floor();
 
+    if (m_CurrentNode->m_Delta == ImVec2(0, 0)) {
+        m_CurrentNode->m_Delta = m_NodeRect.GetSize() - m_CurrentNode->m_DesiredSize;
+    }
+    m_CurrentNode->m_DesiredSize = m_NodeRect.GetSize() - m_CurrentNode->m_Delta;
+
     if (m_CurrentNode->m_Bounds.GetSize() != m_NodeRect.GetSize()) {
         m_CurrentNode->m_Bounds.Max = m_CurrentNode->m_Bounds.Min + m_NodeRect.GetSize();
         Editor->MakeDirty(SaveReasonFlags::Size, m_CurrentNode);
@@ -4883,6 +4914,7 @@ void ed::NodeBuilder::Group(const ImVec2& size)
 
     m_GroupBounds = ImGui_GetItemRect();
     m_GroupBounds.Floor();
+    m_CurrentNode->m_DesiredSize = size;
 }
 
 ImDrawList* ed::NodeBuilder::GetUserBackgroundDrawList() const

@@ -401,6 +401,8 @@ struct Node final : Object {
     NodeId m_ID;
     NodeType m_Type;
     ImRect m_Bounds;
+    ImVec2 m_DesiredSize;
+    ImVec2 m_Delta;
     int m_Channel;
     Pin* m_LastPin;
     ImVec2 m_DragStart;
@@ -1294,6 +1296,8 @@ struct EditorContext {
     void SetNodePosition(NodeId nodeId, const ImVec2& screenPosition);
     ImVec2 GetNodePosition(NodeId nodeId);
     ImVec2 GetNodeSize(NodeId nodeId);
+    ImVec2 GetNodeDesiredSize(NodeId nodeId);
+    void SetNodeSize(NodeId nodeId, const ImVec2& size);
 
     void MarkNodeToRestoreState(Node* node);
     void RestoreNodeState(Node* node);
