@@ -12,12 +12,12 @@
 #pragma once
 
 //------------------------------------------------------------------------------
+#define IMGUI_DEFINE_MATH_OPERATORS
 #include <cstdint> // std::uintXX_t
 #include <imgui.h>
 #include <utility> // std::move
 #include <vector>
 
-#define IMGUI_DEFINE_MATH_OPERATORS
 
 //------------------------------------------------------------------------------
 namespace ax {
