@@ -7,6 +7,8 @@
 // CREDITS
 //   Written by Michal Cichon
 //------------------------------------------------------------------------------
+#define IMGUI_DEFINE_MATH_OPERATORS
+#include "imgui.h"
 #include "imgui_node_editor_internal.h"
 #include <algorithm>
 #include <bitset>
@@ -42,13 +44,13 @@ namespace Detail {
     DECLARE_HAS_NESTED(Key, Key)                                                               \
     struct KeyTester_##Key {                                                                   \
         template <typename T>                                                                  \
-        static int Get(typename std::enable_if<has_nested_##Key<ImGuiKey_>::value, T>::type*)  \
+        static int Get(typename std::enable_if<has_nested_##Key<ImGuiKey>::value, T>::type*)  \
         {                                                                                      \
             return ImGui::GetKeyIndex(T::Key);                                                 \
         }                                                                                      \
                                                                                                \
         template <typename T>                                                                  \
-        static int Get(typename std::enable_if<!has_nested_##Key<ImGuiKey_>::value, T>::type*) \
+        static int Get(typename std::enable_if<!has_nested_##Key<ImGuiKey>::value, T>::type*) \
         {                                                                                      \
             return -1;                                                                         \
         }                                                                                      \
@@ -59,12 +61,12 @@ DECLARE_KEY_TESTER(ImGuiKey_D);
 
 static inline int GetKeyIndexForF()
 {
-    return KeyTester_ImGuiKey_F::Get<ImGuiKey_>(nullptr);
+    return KeyTester_ImGuiKey_F::Get<ImGuiKey>(nullptr);
 }
 
 static inline int GetKeyIndexForD()
 {
-    return KeyTester_ImGuiKey_D::Get<ImGuiKey_>(nullptr);
+    return KeyTester_ImGuiKey_D::Get<ImGuiKey>(nullptr);
 }
 
 } // namespace Detail
@@ -2995,7 +2997,7 @@ ed::EditorAction::AcceptResult ed::NavigateAction::Accept(const Control& control
 
     auto& io = ImGui::GetIO();
 
-    if (ImGui::IsWindowFocused() && ImGui::IsKeyPressed(GetKeyIndexForF()) && Editor->AreShortcutsEnabled()) {
+    if (ImGui::IsWindowFocused() && ImGui::IsKeyPressed(static_cast<ImGuiKey>(GetKeyIndexForF())) && Editor->AreShortcutsEnabled()) {
         const auto allowZoomIn = io.KeyShift;
 
         auto findHotObjectToZoom = [this, &control, &io]() -> Object* {
@@ -3921,7 +3923,7 @@ ed::EditorAction::AcceptResult ed::ShortcutAction::Accept(const Control& control
         candidateAction = Copy;
     if (io.KeyCtrl && !io.KeyShift && !io.KeyAlt && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_V)))
         candidateAction = Paste;
-    if (io.KeyCtrl && !io.KeyShift && !io.KeyAlt && ImGui::IsKeyPressed(GetKeyIndexForD()))
+    if (io.KeyCtrl && !io.KeyShift && !io.KeyAlt && ImGui::IsKeyPressed(static_cast<ImGuiKey>(GetKeyIndexForD())))
         candidateAction = Duplicate;
     if (!io.KeyCtrl && !io.KeyShift && !io.KeyAlt && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Space)))
         candidateAction = CreateNode;
@@ -4751,6 +4753,7 @@ void ed::NodeBuilder::End()
         ImGui::SameLine(0, editorStyle.NodePadding.z);
         ImGui::Dummy(ImVec2(0, 0));
         ImGui::SetCursorPosY(ImGui::GetCursorPosY() + editorStyle.NodePadding.w);
+        ImGui::Dummy(ImVec2(0, 0));
     }
 
     // End outer group.
