@@ -4753,6 +4753,7 @@ void ed::NodeBuilder::End()
         ImGui::SameLine(0, editorStyle.NodePadding.z);
         ImGui::Dummy(ImVec2(0, 0));
         ImGui::SetCursorPosY(ImGui::GetCursorPosY() + editorStyle.NodePadding.w);
+        ImGui::Dummy(ImVec2(0, 0));
     }
 
     // End outer group.
