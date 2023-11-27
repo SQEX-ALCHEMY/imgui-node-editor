@@ -7,8 +7,7 @@
 // CREDITS
 //   Written by Michal Cichon
 //------------------------------------------------------------------------------
-#ifndef __IMGUI_NODE_EDITOR_H__
-#define __IMGUI_NODE_EDITOR_H__
+
 #pragma once
 
 //------------------------------------------------------------------------------
@@ -430,6 +429,3 @@ struct PinId final : Details::SafePointerType<PinId> {
 //------------------------------------------------------------------------------
 } // namespace NodeEditor
 } // namespace ax
-
-//------------------------------------------------------------------------------
-#endif // __IMGUI_NODE_EDITOR_H__

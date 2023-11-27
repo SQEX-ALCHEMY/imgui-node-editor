@@ -7,15 +7,11 @@
 // CREDITS
 //   Written by Michal Cichon
 //------------------------------------------------------------------------------
-#ifndef __IMGUI_NODE_EDITOR_INTERNAL_H__
-#define __IMGUI_NODE_EDITOR_INTERNAL_H__
+
 #pragma once
 
 //------------------------------------------------------------------------------
 #include "imgui_node_editor.h"
-
-//------------------------------------------------------------------------------
-#define IMGUI_DEFINE_MATH_OPERATORS
 #include "imgui_extra_math.h"
 #include <imgui.h>
 #include "imgui_bezier_math.h"
@@ -1500,6 +1496,3 @@ constexpr const float kLinkHalfWidth = 5.0F;
 
 //------------------------------------------------------------------------------
 #include "imgui_node_editor_internal.inl"
-
-//------------------------------------------------------------------------------
-#endif // __IMGUI_NODE_EDITOR_INTERNAL_H__
