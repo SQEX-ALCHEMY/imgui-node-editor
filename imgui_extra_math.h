@@ -7,15 +7,12 @@
 // CREDITS
 //   Written by Michal Cichon
 //------------------------------------------------------------------------------
-# ifndef __IMGUI_EXTRA_MATH_H__
-# define __IMGUI_EXTRA_MATH_H__
+
 # pragma once
 
 
 //------------------------------------------------------------------------------
-# ifndef IMGUI_DEFINE_MATH_OPERATORS
-#     define IMGUI_DEFINE_MATH_OPERATORS
-# endif
+# define IMGUI_DEFINE_MATH_OPERATORS
 # include <imgui.h>
 # include <imgui_internal.h>
 
@@ -65,7 +62,3 @@ inline V EaseOutQuad(V b, V c, T t)
 
 //------------------------------------------------------------------------------
 # include "imgui_extra_math.inl"
-
-
-//------------------------------------------------------------------------------
-# endif // __IMGUI_EXTRA_MATH_H__

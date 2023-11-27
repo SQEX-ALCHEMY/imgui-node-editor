@@ -7,10 +7,8 @@
 // CREDITS
 //   Written by Michal Cichon
 //------------------------------------------------------------------------------
-# ifndef __IMGUI_BEZIER_MATH_INL__
-# define __IMGUI_BEZIER_MATH_INL__
-# pragma once
 
+# pragma once
 
 //------------------------------------------------------------------------------
 # include "imgui_bezier_math.h"
@@ -664,7 +662,3 @@ inline void ImCubicBezierFixedStep(F& callback, const ImCubicBezierPoints& curve
 
     ImCubicBezierFixedStep(handler, &callback, curve.P0, curve.P1, curve.P2, curve.P3, step, overshoot, max_value_error, max_t_error);
 }
-
-
-//------------------------------------------------------------------------------
-# endif // __IMGUI_BEZIER_MATH_INL__
