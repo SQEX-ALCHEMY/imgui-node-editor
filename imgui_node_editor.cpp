@@ -8,8 +8,8 @@
 //   Written by Michal Cichon
 //------------------------------------------------------------------------------
 
-#include "imgui_node_editor_internal.h"
 #include "imgui.h"
+#include "imgui_node_editor_internal.h"
 #include <algorithm>
 #include <bitset>
 #include <climits>
@@ -40,20 +40,20 @@ namespace ax {
 namespace NodeEditor {
 namespace Detail {
 
-#define DECLARE_KEY_TESTER(Key)                                                                \
-    DECLARE_HAS_NESTED(Key, Key)                                                               \
-    struct KeyTester_##Key {                                                                   \
-        template <typename T>                                                                  \
+#define DECLARE_KEY_TESTER(Key)                                                               \
+    DECLARE_HAS_NESTED(Key, Key)                                                              \
+    struct KeyTester_##Key {                                                                  \
+        template <typename T>                                                                 \
         static int Get(typename std::enable_if<has_nested_##Key<ImGuiKey>::value, T>::type*)  \
-        {                                                                                      \
-            return ImGui::GetKeyIndex(T::Key);                                                 \
-        }                                                                                      \
-                                                                                               \
-        template <typename T>                                                                  \
+        {                                                                                     \
+            return ImGui::GetKeyIndex(T::Key);                                                \
+        }                                                                                     \
+                                                                                              \
+        template <typename T>                                                                 \
         static int Get(typename std::enable_if<!has_nested_##Key<ImGuiKey>::value, T>::type*) \
-        {                                                                                      \
-            return -1;                                                                         \
-        }                                                                                      \
+        {                                                                                     \
+            return -1;                                                                        \
+        }                                                                                     \
     }
 
 DECLARE_KEY_TESTER(ImGuiKey_F);
@@ -3057,8 +3057,8 @@ bool ed::NavigateAction::Process(const Control& control)
         m_ScrollDelta = ImGui::GetMouseDragDelta(c_ScrollButtonIndex);
         m_Scroll = m_ScrollStart - m_ScrollDelta * m_Zoom;
 
-        //         if (IsActive && Animation.IsPlaying())
-        //             Animation.Target = Animation.Target - ScrollDelta * Animation.TargetZoom;
+        // if (IsActive && Animation.IsPlaying())
+        //     Animation.Target = Animation.Target - ScrollDelta * Animation.TargetZoom;
     } else {
         if (m_Scroll != m_ScrollStart)
             Editor->MakeDirty(SaveReasonFlags::Navigation);

@@ -17,7 +17,6 @@
 #include <utility> // std::move
 #include <vector>
 
-
 //------------------------------------------------------------------------------
 namespace ax {
 namespace NodeEditor {
@@ -281,7 +280,7 @@ void SetNodePosition(NodeId nodeId, const ImVec2& editorPosition);
 ImVec2 GetNodePosition(NodeId nodeId);
 ImVec2 GetNodeSize(NodeId nodeId);
 ImVec2 GetNodeDesiredSize(NodeId nodeId);
-void SetNodeSize(NodeId nodeId, const ImVec2& size);\
+void SetNodeSize(NodeId nodeId, const ImVec2& size);
 void CenterNodeOnScreen(NodeId nodeId);
 
 void RestoreNodeState(NodeId nodeId);

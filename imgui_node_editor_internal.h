@@ -11,11 +11,11 @@
 #pragma once
 
 //------------------------------------------------------------------------------
-#include "imgui_node_editor.h"
-#include "imgui_extra_math.h"
-#include <imgui.h>
 #include "imgui_bezier_math.h"
 #include "imgui_canvas.h"
+#include "imgui_extra_math.h"
+#include "imgui_node_editor.h"
+#include <imgui.h>
 #include <imgui_internal.h>
 
 #include "crude_json.h"
@@ -57,7 +57,8 @@ inline ImRect ImGui_GetItemRect();
         using yes_type = char;                                                      \
                                                                                     \
         struct base {                                                               \
-            void __member_name__() {}                                               \
+            void __member_name__()                                                  \
+            {}                                                                      \
         };                                                                          \
         struct mixin : public base, public check_type {                             \
         };                                                                          \
