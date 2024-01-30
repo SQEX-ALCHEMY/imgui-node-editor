@@ -320,6 +320,7 @@ IMGUI_NODE_EDITOR_API void EndNode();
 IMGUI_NODE_EDITOR_API bool BeginGroupHint(NodeId nodeId);
 IMGUI_NODE_EDITOR_API ImVec2 GetGroupMin();
 IMGUI_NODE_EDITOR_API ImVec2 GetGroupMax();
+IMGUI_NODE_EDITOR_API void GetGroupContainedIds(NodeId id, std::vector<NodeId>* ids);
 IMGUI_NODE_EDITOR_API ImDrawList* GetHintForegroundDrawList();
 IMGUI_NODE_EDITOR_API ImDrawList* GetHintBackgroundDrawList();
 IMGUI_NODE_EDITOR_API void EndGroupHint();

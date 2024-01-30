@@ -1843,6 +1843,32 @@ float ed::EditorContext::GetNodeZPosition(NodeId nodeId)
     return node->m_ZPosition;
 }
 
+ImVec2 ed::EditorContext::GetNodeDesiredSize(NodeId nodeId)
+{
+    auto node = FindNode(nodeId);
+    if (!node)
+        return ImVec2(0, 0);
+
+    return node->m_DesiredSize;
+}
+
+void ed::EditorContext::SetNodeSize(NodeId nodeId, const ImVec2& size)
+{
+    auto node = FindNode(nodeId);
+    if (!node) {
+        node = CreateNode(nodeId);
+        node->m_IsLive = false;
+    }
+    if (node->m_DesiredSize != size) {
+        node->m_Bounds.Max = node->m_Bounds.Min + size;
+        node->m_GroupBounds.Min = node->m_Bounds.Min;
+        node->m_GroupBounds.Max = node->m_Bounds.Min + size;
+        node->m_Bounds.Floor();
+        node->m_DesiredSize = size;
+        MakeDirty(NodeEditor::SaveReasonFlags::Size, node);
+    }
+}
+
 void ed::EditorContext::MarkNodeToRestoreState(Node* node)
 {
     node->m_RestoreState = true;
