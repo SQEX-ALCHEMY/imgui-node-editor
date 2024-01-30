@@ -9,20 +9,17 @@
 // CREDITS
 //   Written by Michal Cichon
 //------------------------------------------------------------------------------
-# ifndef __IMGUI_NODE_EDITOR_INTERNAL_INL__
-# define __IMGUI_NODE_EDITOR_INTERNAL_INL__
-# pragma once
-
+#ifndef __IMGUI_NODE_EDITOR_INTERNAL_INL__
+#define __IMGUI_NODE_EDITOR_INTERNAL_INL__
+#pragma once
 
 //------------------------------------------------------------------------------
-# include "imgui_node_editor_internal.h"
-
+#include "imgui_node_editor_internal.h"
 
 //------------------------------------------------------------------------------
 namespace ax {
 namespace NodeEditor {
 namespace Detail {
-
 
 //------------------------------------------------------------------------------
 //inline ImRect ToRect(const ax::rectf& rect)
@@ -54,12 +51,10 @@ inline ImVec2 ImGui_GetMouseClickPos(ImGuiMouseButton buttonIndex)
         return ImGui::GetMousePos();
 }
 
-
 //------------------------------------------------------------------------------
 } // namespace Detail
-} // namespace Editor
+} //namespace NodeEditor
 } // namespace ax
 
-
 //------------------------------------------------------------------------------
-# endif // __IMGUI_NODE_EDITOR_INTERNAL_INL__
+#endif // __IMGUI_NODE_EDITOR_INTERNAL_INL__
