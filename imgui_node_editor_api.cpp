@@ -28,7 +28,8 @@ static int BuildIdList(C& container, I* list, int listSize, F&& accept)
             if (accept(object)) {
                 list[count] = I(object->ID().AsPointer());
                 ++count;
-                --listSize;}
+                --listSize;
+            }
         }
 
         return count;
@@ -63,14 +64,11 @@ const ax::NodeEditor::Config& ax::NodeEditor::GetConfig(EditorContext* ctx)
     if (ctx == nullptr)
         ctx = GetCurrentEditor();
 
-    if (ctx)
-    {
+    if (ctx) {
         auto editor = reinterpret_cast<ax::NodeEditor::Detail::EditorContext*>(ctx);
 
         return editor->GetConfig();
-    }
-    else
-    {
+    } else {
         static Config s_EmptyConfig;
         return s_EmptyConfig;
     }

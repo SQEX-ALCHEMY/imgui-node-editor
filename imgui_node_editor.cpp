@@ -9,7 +9,9 @@
 // CREDITS
 //   Written by Michal Cichon
 //------------------------------------------------------------------------------
+
 #include "imgui_node_editor_internal.h"
+#include "imgui_proxy.h"
 #include <algorithm>
 #include <bitset>
 #include <climits>
@@ -452,6 +454,7 @@ static void ImDrawList_PolyFillScanFlood(ImDrawList *draw, std::vector<ImVec2>* 
 }
 */
 
+// static void ImDrawList_AddBezierWithArrows(ImDrawList* drawList, const ImCubicBezierPoints& curve, float thickness, float startArrowSize, float startArrowWidth, float endArrowSize, float endArrowWidth, bool fill, ImU32 color, float strokeThickness)
 static void ImDrawList_AddBezierWithArrows(ImDrawList* drawList, const ImCubicBezierPoints& curve, float thickness, float startArrowSize, float startArrowWidth, float endArrowSize, float endArrowWidth, bool fill, ImU32 color, float strokeThickness, const ImVec2* startDirHint = nullptr, const ImVec2* endDirHint = nullptr)
 {
     using namespace ax;
@@ -675,6 +678,8 @@ void ed::Node::Draw(ImDrawList* drawList, DrawFlags flags)
 void ed::Node::DrawBorder(ImDrawList* drawList, ImU32 color, float thickness, float offset)
 {
     if (thickness > 0.0f) {
+        // drawList->AddRect(m_Bounds.Min, m_Bounds.Max,
+        //     color, m_Rounding, ImDrawFlags_RoundCornersAll, thickness);
         const ImVec2 extraOffset = ImVec2(offset, offset);
 
         drawList->AddRect(m_Bounds.Min - extraOffset, m_Bounds.Max + extraOffset,
@@ -1494,7 +1499,7 @@ void ed::EditorContext::End()
     m_IsFirstFrame = false;
 }
 
-bool ed::EditorContext::DoLink(LinkId id, PinId startPinId, PinId endPinId, ImU32 color, float thickness, bool bezier)
+bool ed::EditorContext::DoLink(LinkId id, PinId startPinId, PinId endPinId, ImU32 color, float thickness, bool isSameNode)
 {
     //auto& editorStyle = GetStyle();
 
@@ -1514,6 +1519,7 @@ bool ed::EditorContext::DoLink(LinkId id, PinId startPinId, PinId endPinId, ImU3
     link->m_HighlightColor = GetColor(StyleColor_HighlightLinkBorder);
     link->m_Thickness = thickness;
     link->m_IsLive = true;
+    link->m_SameNode = isSameNode;
 
     link->UpdateEndpoints();
 
@@ -1913,6 +1919,23 @@ ed::Node* ed::EditorContext::CreateNode(NodeId id)
     if (!settings)
         settings = m_Settings.AddNode(id);
 
+    // MY CODE
+    //     if (!settings->m_WasUsed) {
+    //     settings->m_WasUsed = true;
+    //     RestoreNodeState(node->m_ID);
+    // }
+
+    // node->m_Bounds.Min = settings->m_Location;
+    // node->m_Bounds.Max = node->m_Bounds.Min;
+    // node->m_Bounds.Floor();
+
+    // if (settings->m_GroupSize.x > 0 || settings->m_GroupSize.y > 0) {
+    //     node->m_Type = NodeType::Group;
+    //     node->m_GroupBounds.Min = settings->m_Location;
+    //     node->m_GroupBounds.Max = node->m_GroupBounds.Min + settings->m_GroupSize;
+    //     node->m_GroupBounds.Floor();
+    // }
+    // MY CODE
     UpdateNodeState(node);
 
     if (settings->m_GroupSize.x > 0 || settings->m_GroupSize.y > 0)
@@ -2973,6 +2996,12 @@ void ed::FlowAnimation::UpdatePath()
     };
 
     const auto step = ImMax(m_MarkerDistance * 0.5f, 15.0f);
+    if (m_Link->m_Bezier) {
+        const auto curve = m_Link->GetCurve();
+        m_PathLength = ImCubicBezierLength(curve.P0, curve.P1, curve.P2, curve.P3);
+        ImCubicBezierFixedStep(collectPointsCallback, curve, step, false, 0.5f, 0.001f);
+        return;
+    }
 
     m_Path.resize(0);
     ImCubicBezierFixedStep(collectPointsCallback, curve, step, false, 0.5f, 0.001f);
@@ -4638,6 +4667,24 @@ ed::EditorAction::AcceptResult ed::DeleteItemsAction::Accept(const Control& cont
     if (m_IsActive)
         return False;
 
+    // MY CODE
+    // auto addDeadLinks = [this]() {
+    //     vector<ed::Link*> links;
+    //     for (auto object : m_CandidateObjects) {
+    //         auto node = object->AsNode();
+    //         if (!node)
+    //             continue;
+
+    // Editor->FindLinksForNode(node->m_ID, links, true);
+    //}
+    //if (!links.empty()) {
+    // std::sort(links.begin(), links.end());
+    // links.erase(std::unique(links.begin(), links.end()), links.end());
+    // m_CandidateObjects.insert(m_CandidateObjects.end(), links.begin(), links.end());
+    //}
+    //};
+    //MY CODE
+
     auto& io = ImGui::GetIO();
     if (Editor->CanAcceptUserInput() && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Delete)) && Editor->AreShortcutsEnabled()) {
         auto& selection = Editor->GetSelectedObjects();
@@ -4873,6 +4920,12 @@ void ed::NodeBuilder::Begin(NodeId nodeId)
 
     m_CurrentNode = Editor->GetNode(nodeId);
 
+    // MY CODE
+    //if (m_CurrentNode->m_RestoreState) {
+    //    Editor->RestoreNodeState(m_CurrentNode);
+    //    m_CurrentNode->m_RestoreState = false;
+    //}
+    // MY CODE
     Editor->UpdateNodeState(m_CurrentNode);
 
     if (m_CurrentNode->m_CenterOnScreen) {
@@ -4968,6 +5021,13 @@ void ed::NodeBuilder::End()
     m_NodeRect = ImGui_GetItemRect();
     m_NodeRect.Floor();
 
+    // MY CODE
+    // if (m_CurrentNode->m_Delta == ImVec2(0, 0)) {
+    //     m_CurrentNode->m_Delta = m_NodeRect.GetSize() - m_CurrentNode->m_DesiredSize;
+    // }
+    // m_CurrentNode->m_DesiredSize = m_NodeRect.GetSize() - m_CurrentNode->m_Delta;
+
+    //MY CODE
     if (m_CurrentNode->m_Bounds.GetSize() != m_NodeRect.GetSize()) {
         m_CurrentNode->m_Bounds.Max = m_CurrentNode->m_Bounds.Min + m_NodeRect.GetSize();
         Editor->MakeDirty(SaveReasonFlags::Size, m_CurrentNode);
@@ -5528,7 +5588,6 @@ void ed::Config::EndSave()
         EndSaveSession(UserPointer);
 }
 
-
 bool ed::Link::TestHitSameNode(const ImLinePoints& path, const ImVec2& point, float extraThickness) const
 {
     auto inlineDistance = [](const ImVec2& l1, const ImVec2& l2, const ImVec2& p1) {
@@ -5561,7 +5620,6 @@ bool ed::Link::TestHitSameNode(const ImLinePoints& path, const ImVec2& point, fl
     return false;
 }
 
-
 void ed::EditorContext::GetGroupContainedIds(NodeId id, std::vector<NodeId>* ids)
 {
     ids->clear();
@@ -5580,7 +5638,6 @@ bool ax::NodeEditor::Detail::EditorContext::InBeginEnd() const
 {
     return m_Canvas.InBeginEnd();
 }
-
 
 ImVec2 ed::EditorContext::GetNodeDesiredSize(NodeId nodeId)
 {

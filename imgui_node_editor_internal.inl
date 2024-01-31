@@ -51,10 +51,9 @@ inline ImVec2 ImGui_GetMouseClickPos(ImGuiMouseButton buttonIndex)
         return ImGui::GetMousePos();
 }
 
-
 //------------------------------------------------------------------------------
 } // namespace Detail
-} // namespace NodeEditor
+} //namespace NodeEditor
 } // namespace ax
 
 //------------------------------------------------------------------------------

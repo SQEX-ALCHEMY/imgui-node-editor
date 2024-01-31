@@ -44,12 +44,11 @@
 //
 // CREDITS
 //   Written by Michal Cichon
-# ifndef __IMGUI_EX_CANVAS_H__
-# define __IMGUI_EX_CANVAS_H__
-# pragma once
 
-# include <imgui.h>
-# include <imgui_internal.h> // ImRect, ImFloor
+#pragma once
+
+#include <imgui.h>
+#include <imgui_internal.h> // ImRect, ImFloor
 
 #ifndef IMGUIEX_CANVAS_API
 #define IMGUIEX_CANVAS_API
@@ -57,11 +56,10 @@
 
 namespace ImGuiEx {
 
-struct CanvasView
-{
+struct CanvasView {
     ImVec2 Origin;
-    float  Scale  = 1.0f;
-    float  InvScale = 1.0f;
+    float Scale = 1.0f;
+    float InvScale = 1.0f;
 
     CanvasView() = default;
     CanvasView(const ImVec2& origin, float scale)
@@ -94,8 +92,7 @@ struct CanvasView
 //     Please do not interleave canvas with use of channel splitter.
 //     Keep channel splitter contained inside canvas or always
 //     call canvas functions from same channel.
-struct Canvas
-{
+struct Canvas {
     // Begins drawing content of canvas plane.
     //
     // When false is returned that mean canvas is not visible to the
@@ -188,7 +185,7 @@ struct Canvas
     //
     // Origin is an offset of infinite plane origin from top left
     // corner of the canvas.
-    const ImVec2& ViewOrigin()  const { return m_View.Origin; }
+    const ImVec2& ViewOrigin() const { return m_View.Origin; }
 
     // Returns scale of the view.
     float ViewScale() const { return m_View.Scale; }
@@ -201,17 +198,19 @@ struct Canvas
     bool InBeginEnd() const { return m_InBeginEnd; }
 
 private:
-# define IMGUI_EX_CANVAS_DEFERED() 0
+#define IMGUI_EX_CANVAS_DEFERED() 0
 
-# if IMGUI_EX_CANVAS_DEFERED()
-    struct Range
-    {
+private:
+#define IMGUI_EX_CANVAS_DEFERED() 0
+
+#if IMGUI_EX_CANVAS_DEFERED()
+    struct Range {
         int BeginVertexIndex = 0;
-        int EndVertexIndex   = 0;
+        int EndVertexIndex = 0;
         int BeginComandIndex = 0;
-        int EndCommandIndex  = 0;
+        int EndCommandIndex = 0;
     };
-# endif
+#endif
 
     void UpdateViewTransformPosition();
 
@@ -233,17 +232,17 @@ private:
     ImDrawList* m_DrawList = nullptr;
     int m_ExpectedChannel = 0;
 
-# if IMGUI_EX_CANVAS_DEFERED()
+#if IMGUI_EX_CANVAS_DEFERED()
     ImVector<Range> m_Ranges;
     Range* m_CurrentRange = nullptr;
-# endif
+#endif
 
     int m_DrawListFirstCommandIndex = 0;
     int m_DrawListCommadBufferSize = 0;
     int m_DrawListStartVertexIndex = 0;
 
-    CanvasView  m_View;
-    ImRect      m_ViewRect;
+    CanvasView m_View;
+    ImRect m_ViewRect;
 
     ImVec2 m_ViewTransformPosition;
 
@@ -256,20 +255,18 @@ private:
     ImVec2 m_MouseClickedPosBackup[IM_ARRAYSIZE(ImGuiIO::MouseClickedPos)];
     ImVec2 m_WindowCursorMaxBackup;
 
-# if defined(IMGUI_HAS_VIEWPORT)
+#if defined(IMGUI_HAS_VIEWPORT)
     ImVec2 m_WindowPosBackup;
     ImVec2 m_ViewportPosBackup;
     ImVec2 m_ViewportSizeBackup;
-# if IMGUI_VERSION_NUM > 18002
+#if IMGUI_VERSION_NUM > 18002
     ImVec2 m_ViewportWorkPosBackup;
     ImVec2 m_ViewportWorkSizeBackup;
-# else
+#else
     ImVec2 m_ViewportWorkOffsetMinBackup;
     ImVec2 m_ViewportWorkOffsetMaxBackup;
-# endif
-# endif
+#endif
+#endif
 };
 
 } // namespace ImGuiEx
-
-# endif // __IMGUI_EX_CANVAS_H__

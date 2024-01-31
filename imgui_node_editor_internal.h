@@ -18,6 +18,8 @@
 #include <imgui.h>
 #include "imgui_bezier_math.h"
 #include "imgui_canvas.h"
+#include "imgui_node_editor.h"
+#include "imgui_proxy.h"
 #include <imgui_internal.h>
 
 #include "crude_json.h"
@@ -60,14 +62,13 @@ inline ImVec2 ImGui_GetMouseClickPos(ImGuiMouseButton buttonIndex);
         using yes_type = char;                                                      \
                                                                                     \
         struct base {                                                               \
-            void __member_name__() {}                                               \
+            void __member_name__()                                                  \
+            {}                                                                      \
         };                                                                          \
-        struct mixin : public base, public check_type {                             \
-        };                                                                          \
+        struct mixin : public base, public check_type {};                           \
                                                                                     \
         template <void (base::*)()>                                                 \
-        struct aux {                                                                \
-        };                                                                          \
+        struct aux {};                                                              \
                                                                                     \
         template <typename U>                                                       \
         static no_type test(aux<&U::__member_name__>*);                             \
@@ -212,12 +213,10 @@ struct ObjectWrapper {
     }
 };
 
-struct Object
-{
-    enum DrawFlags
-    {
-        None     = 0,
-        Hovered  = 1,
+struct Object {
+    enum DrawFlags {
+        None = 0,
+        Hovered = 1,
         Selected = 2,
         Highlighted = 4,
     };
@@ -237,9 +236,9 @@ struct Object
 
     EditorContext* const Editor;
 
-    bool    m_IsLive;
-    bool    m_IsSelected;
-    bool    m_DeleteOnNewFrame;
+    bool m_IsLive;
+    bool m_IsSelected;
+    bool m_DeleteOnNewFrame;
 
     Object(EditorContext* editor)
         : Editor(editor)
@@ -314,23 +313,23 @@ struct Pin final : Object {
 
     PinId m_ID;
     PinKind m_Kind;
-    Node*   m_Node;
-    ImRect  m_Bounds;
-    ImRect  m_Pivot;
-    Pin*    m_PreviousPin;
-    ImU32   m_Color;
-    ImU32   m_BorderColor;
-    float   m_BorderWidth;
-    float   m_Rounding;
-    int     m_Corners;
-    ImVec2  m_Dir;
-    float   m_Strength;
-    float   m_Radius;
-    float   m_ArrowSize;
-    float   m_ArrowWidth;
-    bool    m_SnapLinkToDir;
-    bool    m_HasConnection;
-    bool    m_HadConnection;
+    Node* m_Node;
+    ImRect m_Bounds;
+    ImRect m_Pivot;
+    Pin* m_PreviousPin;
+    ImU32 m_Color;
+    ImU32 m_BorderColor;
+    float m_BorderWidth;
+    float m_Rounding;
+    int m_Corners;
+    ImVec2 m_Dir;
+    float m_Strength;
+    float m_Radius;
+    float m_ArrowSize;
+    float m_ArrowWidth;
+    bool m_SnapLinkToDir;
+    bool m_HasConnection;
+    bool m_HadConnection;
 
     Pin(EditorContext* editor, PinId id, PinKind kind)
         : Object(editor)
@@ -408,11 +407,13 @@ struct Node final : Object {
 
     NodeId m_ID;
     NodeType m_Type;
-    ImRect   m_Bounds;
-    float    m_ZPosition;
-    int      m_Channel;
-    Pin*     m_LastPin;
-    ImVec2   m_DragStart;
+    ImRect m_Bounds;
+    ImVec2 m_DesiredSize;
+    ImVec2 m_Delta;
+    float m_ZPosition;
+    int m_Channel;
+    Pin* m_LastPin;
+    ImVec2 m_DragStart;
 
     ImU32 m_Color;
     ImU32 m_BorderColor;
@@ -424,13 +425,11 @@ struct Node final : Object {
     float m_GroupBorderWidth;
     float m_GroupRounding;
     ImRect m_GroupBounds;
-    ImVec2 m_DesiredSize;
-    ImVec2 m_Delta;
 
-    bool     m_HighlightConnectedLinks;
+    bool m_HighlightConnectedLinks;
 
-    bool     m_RestoreState;
-    bool     m_CenterOnScreen;
+    bool m_RestoreState;
+    bool m_CenterOnScreen;
 
     Node(EditorContext* editor, NodeId id)
         : Object(editor)
@@ -480,12 +479,12 @@ struct Link final : Object {
     using IdType = LinkId;
 
     LinkId m_ID;
-    Pin*   m_StartPin;
-    Pin*   m_EndPin;
-    ImU32  m_Color;
-    ImU32  m_HighlightColor;
-    float  m_Thickness;
+    Pin* m_StartPin;
+    Pin* m_EndPin;
+    ImU32 m_Color;
     ImU32 m_FlowColor;
+    ImU32 m_HighlightColor;
+    float m_Thickness;
     ImVec2 m_Start;
     ImVec2 m_End;
     bool m_SameNode;
@@ -563,10 +562,10 @@ struct Settings {
     SaveReasonFlags m_DirtyReason;
 
     vector<NodeSettings> m_Nodes;
-    vector<ObjectId>     m_Selection;
-    ImVec2               m_ViewScroll;
-    float                m_ViewZoom;
-    ImRect               m_VisibleRect;
+    vector<ObjectId> m_Selection;
+    ImVec2 m_ViewScroll;
+    float m_ViewZoom;
+    ImRect m_VisibleRect;
 
     Settings()
         : m_IsDirty(false)
@@ -594,30 +593,29 @@ struct Control {
     Object* ActiveObject;
     Object* ClickedObject;
     Object* DoubleClickedObject;
-    Node*   HotNode;
-    Node*   ActiveNode;
-    Node*   ClickedNode;
-    Node*   DoubleClickedNode;
-    Pin*    HotPin;
-    Pin*    ActivePin;
-    Pin*    ClickedPin;
-    Pin*    DoubleClickedPin;
-    Link*   HotLink;
-    Link*   ActiveLink;
-    Link*   ClickedLink;
-    Link*   DoubleClickedLink;
-    bool    BackgroundHot;
-    bool    BackgroundActive;
-    int     BackgroundClickButtonIndex;
-    int     BackgroundDoubleClickButtonIndex;
+    Node* HotNode;
+    Node* ActiveNode;
+    Node* ClickedNode;
+    Node* DoubleClickedNode;
+    Pin* HotPin;
+    Pin* ActivePin;
+    Pin* ClickedPin;
+    Pin* DoubleClickedPin;
+    Link* HotLink;
+    Link* ActiveLink;
+    Link* ClickedLink;
+    Link* DoubleClickedLink;
+    bool BackgroundHot;
+    bool BackgroundActive;
+    int BackgroundClickButtonIndex;
+    int BackgroundDoubleClickButtonIndex;
 
     Control()
         : Control(nullptr, nullptr, nullptr, nullptr, false, false, -1, -1)
     {
     }
 
-    Control(Object* hotObject, Object* activeObject, Object* clickedObject, Object* doubleClickedObject,
-        bool backgroundHot, bool backgroundActive, int backgroundClickButtonIndex, int backgroundDoubleClickButtonIndex)
+    Control(Object* hotObject, Object* activeObject, Object* clickedObject, Object* doubleClickedObject, bool backgroundHot, bool backgroundActive, int backgroundClickButtonIndex, int backgroundDoubleClickButtonIndex)
         : HotObject(hotObject)
         , ActiveObject(activeObject)
         , ClickedObject(clickedObject)
@@ -832,17 +830,14 @@ struct EditorAction {
     EditorContext* Editor;
 };
 
-struct NavigateAction final: EditorAction
-{
-    enum class ZoomMode
-    {
+struct NavigateAction final : EditorAction {
+    enum class ZoomMode {
         None,
         Exact,
         WithMargin
     };
 
-    enum class NavigationReason
-    {
+    enum class NavigationReason {
         Unknown,
         MouseZoom,
         Selection,
@@ -851,12 +846,12 @@ struct NavigateAction final: EditorAction
         Edge
     };
 
-    bool            m_IsActive;
-    float           m_Zoom;
-    ImRect          m_VisibleRect;
-    ImVec2          m_Scroll;
-    ImVec2          m_ScrollStart;
-    ImVec2          m_ScrollDelta;
+    bool m_IsActive;
+    float m_Zoom;
+    ImRect m_VisibleRect;
+    ImVec2 m_Scroll;
+    ImVec2 m_ScrollStart;
+    ImVec2 m_ScrollDelta;
 
     NavigateAction(EditorContext* editor, ImGuiEx::Canvas& canvas);
 
@@ -890,19 +885,19 @@ struct NavigateAction final: EditorAction
     ImRect GetViewRect() const;
 
 private:
-    ImGuiEx::Canvas&   m_Canvas;
-    ImVec2             m_WindowScreenPos;
-    ImVec2             m_WindowScreenSize;
+    ImGuiEx::Canvas& m_Canvas;
+    ImVec2 m_WindowScreenPos;
+    ImVec2 m_WindowScreenSize;
 
-    NavigateAnimation  m_Animation;
-    NavigationReason   m_Reason;
-    uint64_t           m_LastSelectionId;
-    Object*            m_LastObject;
-    bool               m_MovingOverEdge;
-    ImVec2             m_MoveScreenOffset;
+    NavigateAnimation m_Animation;
+    NavigationReason m_Reason;
+    uint64_t m_LastSelectionId;
+    Object* m_LastObject;
+    bool m_MovingOverEdge;
+    ImVec2 m_MoveScreenOffset;
 
-    const float*       m_ZoomLevels;
-    int                m_ZoomLevelCount;
+    const float* m_ZoomLevels;
+    int m_ZoomLevelCount;
 
     bool HandleZoom(const Control& control);
 
@@ -914,7 +909,7 @@ private:
     int MatchZoomIndex(int direction);
 
     static const float s_DefaultZoomLevels[];
-    static const int   s_DefaultZoomLevelCount;
+    static const int s_DefaultZoomLevelCount;
 };
 
 struct SizeAction final : EditorAction {
@@ -1401,9 +1396,9 @@ struct EditorContext {
     int CountLivePins() const;
     int CountLiveLinks() const;
 
-    Pin*    CreatePin(PinId id, PinKind kind);
-    Node*   CreateNode(NodeId id);
-    Link*   CreateLink(LinkId id);
+    Pin* CreatePin(PinId id, PinKind kind);
+    Node* CreateNode(NodeId id);
+    Link* CreateLink(LinkId id);
 
     Node* FindNode(NodeId id);
     Pin* FindPin(PinId id);
@@ -1471,15 +1466,15 @@ struct EditorContext {
     bool AreShortcutsEnabled();
     bool InBeginEnd() const;
 
-    NodeId GetHoveredNode()            const { return m_HoveredNode;             }
-    PinId  GetHoveredPin()             const { return m_HoveredPin;              }
-    LinkId GetHoveredLink()            const { return m_HoveredLink;             }
-    NodeId GetDoubleClickedNode()      const { return m_DoubleClickedNode;       }
-    PinId  GetDoubleClickedPin()       const { return m_DoubleClickedPin;        }
-    LinkId GetDoubleClickedLink()      const { return m_DoubleClickedLink;       }
-    bool   IsBackgroundClicked()                           const { return m_BackgroundClickButtonIndex >= 0; }
-    bool   IsBackgroundDoubleClicked()                     const { return m_BackgroundDoubleClickButtonIndex >= 0; }
-    ImGuiMouseButton GetBackgroundClickButtonIndex()       const { return m_BackgroundClickButtonIndex; }
+    NodeId GetHoveredNode() const { return m_HoveredNode; }
+    PinId GetHoveredPin() const { return m_HoveredPin; }
+    LinkId GetHoveredLink() const { return m_HoveredLink; }
+    NodeId GetDoubleClickedNode() const { return m_DoubleClickedNode; }
+    PinId GetDoubleClickedPin() const { return m_DoubleClickedPin; }
+    LinkId GetDoubleClickedLink() const { return m_DoubleClickedLink; }
+    bool IsBackgroundClicked() const { return m_BackgroundClickButtonIndex >= 0; }
+    bool IsBackgroundDoubleClicked() const { return m_BackgroundDoubleClickButtonIndex >= 0; }
+    ImGuiMouseButton GetBackgroundClickButtonIndex() const { return m_BackgroundClickButtonIndex; }
     ImGuiMouseButton GetBackgroundDoubleClickButtonIndex() const { return m_BackgroundDoubleClickButtonIndex; }
 
     float AlignPointToGrid(float p) const
@@ -1507,13 +1502,13 @@ private:
 
     void UpdateAnimations();
 
-    Config              m_Config;
+    Config m_Config;
 
-    ImGuiID             m_EditorActiveId;
-    bool                m_IsFirstFrame;
-    bool                m_IsFocused;
-    bool                m_IsHovered;
-    bool                m_IsHoveredWithoutOverlapp;
+    ImGuiID m_EditorActiveId;
+    bool m_IsFirstFrame;
+    bool m_IsFocused;
+    bool m_IsHovered;
+    bool m_IsHoveredWithoutOverlapp;
 
     bool m_ShortcutsEnabled;
 
@@ -1552,21 +1547,21 @@ private:
     vector<AnimationController*> m_AnimationControllers;
     FlowAnimationController m_FlowAnimationController;
 
-    NodeId              m_HoveredNode;
-    PinId               m_HoveredPin;
-    LinkId              m_HoveredLink;
-    NodeId              m_DoubleClickedNode;
-    PinId               m_DoubleClickedPin;
-    LinkId              m_DoubleClickedLink;
-    int                 m_BackgroundClickButtonIndex;
-    int                 m_BackgroundDoubleClickButtonIndex;
+    NodeId m_HoveredNode;
+    PinId m_HoveredPin;
+    LinkId m_HoveredLink;
+    NodeId m_DoubleClickedNode;
+    PinId m_DoubleClickedPin;
+    LinkId m_DoubleClickedLink;
+    int m_BackgroundClickButtonIndex;
+    int m_BackgroundDoubleClickButtonIndex;
 
     bool m_IsInitialized;
     Settings m_Settings;
 
-    ImDrawList*         m_DrawList;
-    int                 m_ExternalChannel;
-    ImDrawListSplitter  m_Splitter;
+    ImDrawList* m_DrawList;
+    int m_ExternalChannel;
+    ImDrawListSplitter m_Splitter;
 };
 
 constexpr const ImRect kDefaultNodeRect(0, 0, 100, 50);
