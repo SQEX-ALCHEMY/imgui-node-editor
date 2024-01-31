@@ -1919,23 +1919,6 @@ ed::Node* ed::EditorContext::CreateNode(NodeId id)
     if (!settings)
         settings = m_Settings.AddNode(id);
 
-    // MY CODE
-    //     if (!settings->m_WasUsed) {
-    //     settings->m_WasUsed = true;
-    //     RestoreNodeState(node->m_ID);
-    // }
-
-    // node->m_Bounds.Min = settings->m_Location;
-    // node->m_Bounds.Max = node->m_Bounds.Min;
-    // node->m_Bounds.Floor();
-
-    // if (settings->m_GroupSize.x > 0 || settings->m_GroupSize.y > 0) {
-    //     node->m_Type = NodeType::Group;
-    //     node->m_GroupBounds.Min = settings->m_Location;
-    //     node->m_GroupBounds.Max = node->m_GroupBounds.Min + settings->m_GroupSize;
-    //     node->m_GroupBounds.Floor();
-    // }
-    // MY CODE
     UpdateNodeState(node);
 
     if (settings->m_GroupSize.x > 0 || settings->m_GroupSize.y > 0)
@@ -4667,24 +4650,6 @@ ed::EditorAction::AcceptResult ed::DeleteItemsAction::Accept(const Control& cont
     if (m_IsActive)
         return False;
 
-    // MY CODE
-    // auto addDeadLinks = [this]() {
-    //     vector<ed::Link*> links;
-    //     for (auto object : m_CandidateObjects) {
-    //         auto node = object->AsNode();
-    //         if (!node)
-    //             continue;
-
-    // Editor->FindLinksForNode(node->m_ID, links, true);
-    //}
-    //if (!links.empty()) {
-    // std::sort(links.begin(), links.end());
-    // links.erase(std::unique(links.begin(), links.end()), links.end());
-    // m_CandidateObjects.insert(m_CandidateObjects.end(), links.begin(), links.end());
-    //}
-    //};
-    //MY CODE
-
     auto& io = ImGui::GetIO();
     if (Editor->CanAcceptUserInput() && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Delete)) && Editor->AreShortcutsEnabled()) {
         auto& selection = Editor->GetSelectedObjects();
@@ -4920,12 +4885,6 @@ void ed::NodeBuilder::Begin(NodeId nodeId)
 
     m_CurrentNode = Editor->GetNode(nodeId);
 
-    // MY CODE
-    //if (m_CurrentNode->m_RestoreState) {
-    //    Editor->RestoreNodeState(m_CurrentNode);
-    //    m_CurrentNode->m_RestoreState = false;
-    //}
-    // MY CODE
     Editor->UpdateNodeState(m_CurrentNode);
 
     if (m_CurrentNode->m_CenterOnScreen) {
@@ -5021,13 +4980,6 @@ void ed::NodeBuilder::End()
     m_NodeRect = ImGui_GetItemRect();
     m_NodeRect.Floor();
 
-    // MY CODE
-    // if (m_CurrentNode->m_Delta == ImVec2(0, 0)) {
-    //     m_CurrentNode->m_Delta = m_NodeRect.GetSize() - m_CurrentNode->m_DesiredSize;
-    // }
-    // m_CurrentNode->m_DesiredSize = m_NodeRect.GetSize() - m_CurrentNode->m_Delta;
-
-    //MY CODE
     if (m_CurrentNode->m_Bounds.GetSize() != m_NodeRect.GetSize()) {
         m_CurrentNode->m_Bounds.Max = m_CurrentNode->m_Bounds.Min + m_NodeRect.GetSize();
         Editor->MakeDirty(SaveReasonFlags::Size, m_CurrentNode);
