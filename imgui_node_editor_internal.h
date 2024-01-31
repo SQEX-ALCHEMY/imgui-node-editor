@@ -18,8 +18,6 @@
 #include <imgui.h>
 #include "imgui_bezier_math.h"
 #include "imgui_canvas.h"
-#include "imgui_node_editor.h"
-#include "imgui_proxy.h"
 #include <imgui_internal.h>
 
 #include "crude_json.h"
