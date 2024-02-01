@@ -72,6 +72,8 @@ jobs:
         repository: SQEX-ALCHEMY/imgui
         path: external/imgui
         ref: docking-layout
+    - name: verify
+      run: tree
     - name: Configure CMake
       run: cmake -S examples -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
     - name: Build
