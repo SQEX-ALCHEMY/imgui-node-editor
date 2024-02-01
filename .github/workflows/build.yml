@@ -33,6 +33,8 @@ jobs:
         repository: SQEX-ALCHEMY/imgui
         path: external/imgui
         ref: docking-layout
+    - name: Move CMakeLists and natvis Schema
+      run: mv misc/ImGuiCMakeLists.txt external/imgui/CMakeLists.txt && mv misc/imgui.natvis external/imgui/imgui.natvis
     - name: Configure CMake
       run: cmake -S examples -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
     - name: Build
@@ -51,7 +53,9 @@ jobs:
       with:
         repository: SQEX-ALCHEMY/imgui
         path: external/imgui
-        ref: docking-layout    
+        ref: docking-layout
+    - name: Move CMakeLists and natvis Schema
+      run: mv misc/ImGuiCMakeLists.txt external/imgui/CMakeLists.txt && mv misc/imgui.natvis external/imgui/imgui.natvis
     - name: Configure CMake
       run: cmake -S examples -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
     - name: Build
@@ -74,8 +78,6 @@ jobs:
         ref: docking-layout
     - name: Move CMakeLists and natvis Schema
       run: mv misc/ImGuiCMakeLists.txt external/imgui/CMakeLists.txt && mv misc/imgui.natvis external/imgui/imgui.natvis
-    - name: verify
-      run: tree
     - name: Configure CMake
       run: cmake -S examples -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
     - name: Build
