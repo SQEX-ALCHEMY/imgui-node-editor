@@ -72,6 +72,8 @@ jobs:
         repository: SQEX-ALCHEMY/imgui
         path: external/imgui
         ref: docking-layout
+    - name: Move CMakeLists and natvis Schema
+      run: mv misc/ImGuiCMakeLists.txt external/imgui/CMakeLists.txt && mv misc/imgui.natvis external/imgui/imgui.natvis
     - name: verify
       run: tree
     - name: Configure CMake
