@@ -96,7 +96,7 @@ bool    ImGui_ImplWin32_Init(void* hwnd)
 # if defined(IMGUI_VERSION_NUM) && (IMGUI_VERSION_NUM >= 18604)
     io.KeyMap[ImGuiKey_KeypadEnter] = VK_RETURN;
 # else
-    io.KeyMap[ImGuiKey_KeyPadEnter] = VK_RETURN;
+    io.KeyMap[ImGuiKey_KeypadEnter] = VK_RETURN;
 # endif
     io.KeyMap[ImGuiKey_A] = 'A';
     io.KeyMap[ImGuiKey_C] = 'C';

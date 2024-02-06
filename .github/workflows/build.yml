@@ -26,7 +26,15 @@ jobs:
       MSBUILD_PATH: C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\MSBuild\Current\Bin\
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
+    - name: Clone ImGui
+      uses: actions/checkout@v4
+      with:
+        repository: SQEX-ALCHEMY/imgui
+        path: external/imgui_clone
+        ref: docking-layout
+    - name: Move CMakeLists and natvis Schema
+      run: mv misc/ImGuiCMakeLists.txt external/imgui_clone/CMakeLists.txt && mv misc/imgui.natvis external/imgui_clone/imgui.natvis
     - name: Configure CMake
       run: cmake -S examples -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
     - name: Build
@@ -38,8 +46,16 @@ jobs:
     steps:
     - name: Install Dependencies
       run: |
-        brew install glfw3    
-    - uses: actions/checkout@v2
+        brew install glfw3
+    - uses: actions/checkout@v4
+    - name: Clone ImGui
+      uses: actions/checkout@v4
+      with:
+        repository: SQEX-ALCHEMY/imgui
+        path: external/imgui_clone
+        ref: docking-layout
+    - name: Move CMakeLists and natvis Schema
+      run: mv misc/ImGuiCMakeLists.txt external/imgui_clone/CMakeLists.txt && mv misc/imgui.natvis external/imgui_clone/imgui.natvis
     - name: Configure CMake
       run: cmake -S examples -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
     - name: Build
@@ -52,8 +68,16 @@ jobs:
     - name: Install Dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -y libglfw3-dev    
-    - uses: actions/checkout@v2
+        sudo apt-get install -y libglfw3-dev 
+    - uses: actions/checkout@v4
+    - name: Clone ImGui
+      uses: actions/checkout@v4
+      with:
+        repository: SQEX-ALCHEMY/imgui
+        path: external/imgui_clone
+        ref: docking-layout
+    - name: Move CMakeLists and natvis Schema
+      run: mv misc/ImGuiCMakeLists.txt external/imgui_clone/CMakeLists.txt && mv misc/imgui.natvis external/imgui_clone/imgui.natvis
     - name: Configure CMake
       run: cmake -S examples -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
     - name: Build
